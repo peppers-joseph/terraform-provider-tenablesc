@@ -73,6 +73,11 @@ func ResourceScan() *schema.Resource {
 				Optional: true,
 				Default:  "3600",
 			},
+			"inactivity_timeout": {
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "3600",
+			},
 			"ips_and_names": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -137,8 +142,8 @@ func resourceScanRead(ctx context.Context, d *schema.ResourceData, m interface{}
 	d.Set("description", scan.Description)
 	d.Set("repository_id", scan.Repository.ID)
 	d.Set("policy_id", scan.Policy.ID)
-	d.Set("scan_virtual_hosts", scan.ScanningVirtualHosts)
-	d.Set("dhcp_tracking", scan.DHCPTracking)
+	d.Set("scan_virtual_hosts", scan.ScanningVirtualHosts.AsBool())
+	d.Set("dhcp_tracking", scan.DHCPTracking.AsBool())
 	d.Set("timeout_action", scan.TimeoutAction)
 	d.Set("max_scan_time", scan.MaxScanTime)
 	d.Set("ips_and_names", scan.IPList)
@@ -195,6 +200,7 @@ func buildScanInputs(d *schema.ResourceData) *tenablesc.Scan {
 	dhcpTracking := d.Get("dhcp_tracking").(bool)
 	timeoutAction := d.Get("timeout_action").(string)
 	maxScanTime := d.Get("max_scan_time").(string)
+	inactivityTimeout := d.Get("inactivity_timeout").(string)
 	ipsNames := d.Get("ips_and_names").(string)
 	assetIDs := d.Get("asset_ids").([]interface{})
 	credentialIDs := d.Get("credential_ids").([]interface{})
@@ -215,6 +221,7 @@ func buildScanInputs(d *schema.ResourceData) *tenablesc.Scan {
 		ScanningVirtualHosts: tenablesc.ToFakeBool(scanningVirtualHosts),
 		TimeoutAction:        timeoutAction,
 		MaxScanTime:          maxScanTime,
+		InactivityTimeout:    inactivityTimeout,
 		IPList:               ipsNames,
 	}
 
